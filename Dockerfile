@@ -7,4 +7,4 @@ COPY . .
 RUN apt-get update && apt-get install -y libicu-dev ca-certificates
 RUN apt list --installed | grep libicu
 RUN chmod +x TokenPay
-CMD [ "./TokenPay" ]
+CMD ./TokenPay --urls=http://0.0.0.0:5000
