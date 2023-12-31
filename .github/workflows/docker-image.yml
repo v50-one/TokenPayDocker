@@ -1,18 +1,37 @@
-name: Docker Image CI
-
+name: Docker Build and Push
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - master
+  workflow_dispatch:
 
 jobs:
-
-  build:
-
-    runs-on: ubuntu-latest
-
+  docker:
+    runs-on: ubuntu-20.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag tokenpay:$(date +%s)
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        if: contains(github.event.head_commit.message, 'build')
+        uses: actions/setup-go@v2
+        with:
+          go-version: ^1.21.0
+
+      - name: Log in to Docker Hub
+        if: contains(github.event.head_commit.message, 'build')
+        uses: docker/login-action@v1
+        with:
+          username: lfreea
+          password: dckr_pat_BlsimazCtkseQEMrA_qcDDr56D0
+
+      - name: Build and push Docker image
+        if: contains(github.event.head_commit.message, 'build')
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: lfreea/tokenpay:latest, lfreea/tokenpay:${{ github.sha }}
+          build-args: |
+            SOME_ARG=${{ secrets.SOME_SECRET }}
